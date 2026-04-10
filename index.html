@@ -8,6 +8,11 @@
     <meta name="theme-color" content="#0ea5e9">
     <meta name="msapplication-TileColor" content="#0ea5e9">
     <meta name="msapplication-TileImage" content="./icon/favicon.png">
+    <meta name="application-name" content="Hit Portfolio">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hit Portfolio">
+    <link rel="manifest" href="./manifest.json">
     <title>Hit | Portfolio</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -1453,11 +1458,11 @@
 <header>
     <a href="#" class="logo">Por<span>tfol</span>io</a>
     <nav id="primary-nav">
-        <a href="#home">Home</a>
+        <!-- <a href="#home">Home</a>
         <a href="#about">About</a>
         <a href="#skills">Skills</a>
         <a href="#projects">Projects</a>
-        <a href="#contact">Contact</a>
+        <a href="#contact">Contact</a> -->
         <button class="resume-btn" id="resume-open-btn" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -2984,6 +2989,132 @@
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') hideMenu();
     });
+})();
+</script>
+
+<!-- Service Worker Registration for PWA -->
+<script>
+(function () {
+    if (!navigator.serviceWorker) return;
+    
+    window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./service-worker.js')
+            .then(function (registration) {
+                console.log('Service Worker registered successfully:', registration);
+                // Prompt user to add to home screen on supported browsers
+                handlePWAInstall();
+            })
+            .catch(function (error) {
+                console.log('Service Worker registration failed:', error);
+            });
+    });
+
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallPrompt();
+    });
+
+    function showInstallPrompt() {
+        // Show a custom banner or button to install app
+        const installBanner = document.createElement('div');
+        installBanner.id = 'pwa-install-banner';
+        installBanner.style.cssText = `
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #0ea5e9, #0369a1);
+            color: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 9999;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
+            font-family: Poppins, sans-serif;
+            animation: slideUp 0.3s ease;
+        `;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from { transform: translateY(100%); }
+                to { transform: translateY(0); }
+            }
+            @media (max-width: 640px) {
+                #pwa-install-banner {
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                #pwa-install-banner button {
+                    width: 100% !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        installBanner.innerHTML = `
+            <div style="flex: 1;">
+                <strong style="font-size: 14px;">Install App</strong>
+                <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9;">Add to your home screen for quick access</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="pwa-install-btn" style="
+                    padding: 8px 16px;
+                    background: rgba(255,255,255,0.3);
+                    border: 1px solid rgba(255,255,255,0.5);
+                    color: white;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 12px;
+                    transition: all 0.2s;
+                ">Install</button>
+                <button id="pwa-dismiss-btn" style="
+                    padding: 8px 16px;
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 12px;
+                ">Dismiss</button>
+            </div>
+        `;
+
+        document.body.appendChild(installBanner);
+
+        document.getElementById('pwa-install-btn').addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User installed the PWA');
+                    }
+                    deferredPrompt = null;
+                    installBanner.remove();
+                });
+            }
+        });
+
+        document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+            installBanner.remove();
+        });
+    }
+
+    window.addEventListener('appinstalled', () => {
+        console.log('PWA app installed');
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.remove();
+        deferredPrompt = null;
+    });
+
+    function handlePWAInstall() {
+        // You can add additional PWA installation handling here
+    }
 })();
 </script>
 
